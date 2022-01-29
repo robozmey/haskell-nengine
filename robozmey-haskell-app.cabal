@@ -36,6 +36,8 @@ library
     , ansi-terminal
     , base >=4.7 && <5
     , lens
+    , matrix
+    , parallel
     , time
   default-language: Haskell2010
 
@@ -52,6 +54,8 @@ executable robozmey-haskell-app-exe
     , ansi-terminal
     , base >=4.7 && <5
     , lens
+    , matrix
+    , parallel
     , robozmey-haskell-app
     , time
   default-language: Haskell2010
@@ -70,6 +74,8 @@ test-suite robozmey-haskell-app-test
     , ansi-terminal
     , base >=4.7 && <5
     , lens
+    , matrix
+    , parallel
     , robozmey-haskell-app
     , time
   default-language: Haskell2010

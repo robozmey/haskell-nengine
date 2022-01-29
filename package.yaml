@@ -26,6 +26,8 @@ dependencies:
 - OpenGL
 - time
 - lens
+- matrix
+- parallel
 library:
   source-dirs: src
 
