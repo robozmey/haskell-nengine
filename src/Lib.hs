@@ -7,7 +7,8 @@ dimension = 3
 
 inf = 999999
 
-newtype Coords = Coords [Double]
+newtype Coords = Coords [Double] 
+    deriving Show
 
 newtype MyColor4 = MyColor4 (Double, Double, Double, Double)
 
@@ -37,7 +38,7 @@ class Figure f where
 whiteColor = MyColor4 (1, 1, 1, 1)
 blackColor = MyColor4 (0, 0, 0, 1)
 
-figures = [Sphere (Coords [2, 0, 0]) 0.1, Sphere (Coords [2, 0, 2]) 0.1] --map (\x -> Sphere (Coords [x, x, x]) 0.5) [1..1]--
+figures = [Sphere (Coords [2, 0, 0]) 0.1, Sphere (Coords [2, 0, 2]) 0.1, Sphere (Coords [4, 1, 2]) 0.1] --map (\x -> Sphere (Coords [x, x, x]) 0.5) [1..1]--
 
 disctance2 :: Coords -> Coords -> Double
 disctance2 (Coords x1s) (Coords x2s)  = foldr (+) 0 (zipWith (\y1 y2 -> (y1 - y2)^2) x1s x2s)
@@ -53,15 +54,12 @@ instance Figure Sphere where
 zero_coords = Coords $ take dimension $ repeat 0
 
 screen_distance = 1
-pixel_i_size = 0.01
-pixel_j_size = 0.01
-
+pixel_x_size = 0.01
+pixel_y_size = 0.01
 
 view_direction = Coords [1, 0, 0]
 up_direction = Coords [0, 1, 0]
 side_direction = Coords [0, 0, 1]
-
-my_position = zero_coords
 
 min_distance :: Coords -> Double
 min_distance cxs = sqrt $ foldr min inf $ map (distanceF cxs) figures
@@ -76,10 +74,10 @@ trace' :: Coords -> Coords -> Coords
 trace' cxs dxs = moveCoordsD cxs dxs d
     where d = min_distance cxs
 
-trace :: Int -> Int -> Int
-trace i j = if (md > 0.1) then 0 else 4
+trace :: Coords -> Int -> Int -> Int
+trace my_position x y = if (md > 0.1) then 0 else 4
     where dxs = normilize $ cxs - my_position
-          cxs = my_position + view_direction `scalarMul` screen_distance + up_direction `scalarMul` (fromIntegral  i * pixel_i_size) + side_direction `scalarMul` (fromIntegral j * pixel_j_size)
+          cxs = my_position + view_direction `scalarMul` screen_distance + side_direction `scalarMul` (fromIntegral  x * pixel_x_size) + up_direction `scalarMul` (fromIntegral y * pixel_y_size)
           fxs = foldl (\cxs' i ->  trace' cxs' dxs) cxs [0..10]
           md = min_distance fxs
 
