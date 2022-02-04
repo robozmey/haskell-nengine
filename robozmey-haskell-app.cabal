@@ -25,8 +25,11 @@ source-repository head
 
 library
   exposed-modules:
+      Constants
+      Coords
       Figures
       Lib
+      Trace
   other-modules:
       Paths_robozmey_haskell_app
   hs-source-dirs:
