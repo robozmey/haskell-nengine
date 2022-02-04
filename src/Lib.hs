@@ -8,6 +8,8 @@ dimension = 3
 
 inf = 999999
 
+data Axis = ViewDirection | SideDirection | UpDirection
+
 newtype Coords = Coords [Double] 
     deriving Show
 

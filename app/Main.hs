@@ -71,81 +71,60 @@ view_speed = 0.1
 keyboardMouse st key keyState _ {-modifiers-} _ {- pos -} =
   keyboardAct st key keyState
 
--- step Left
-keyboardAct st (Char 'a') Down = do
+movePlayer st speed enum_axis = do
   (my_position, my_rotation, my_axises) <- Graphics.Rendering.OpenGL.get st
   let (view_direction, side_direction, up_direction) = my_axises
 
-  let my_position' = my_position - side_direction `scalarMul` side_speed
+  let move_direction = case enum_axis of  ViewDirection -> view_direction
+                                          SideDirection -> side_direction
+                                          UpDirection   -> up_direction
+
+  let my_position' = my_position + move_direction `scalarMul` speed
 
   st $=! (my_position', my_rotation, my_axises)
+
+
+rotatePlayer st axis phi = do
+  (my_position, my_rotation, my_axises) <- Graphics.Rendering.OpenGL.get st
+  let (view_direction, side_direction, up_direction) = my_axises
+
+  let r = my_rotation `getCoord` axis + phi
+  let my_rotation' = setCoord my_rotation axis r
+
+  setNewRotation st my_rotation'
+
+
+-- step Left
+keyboardAct st (Char 'a') Down = do
+  movePlayer st (-side_speed) SideDirection
 
 -- step Right
 keyboardAct st (Char 'd') Down = do
-  (my_position, my_rotation, my_axises) <- Graphics.Rendering.OpenGL.get st
-  let (view_direction, side_direction, up_direction) = my_axises
-
-  let my_position' = my_position + side_direction `scalarMul` side_speed
-
-  st $=! (my_position', my_rotation, my_axises)
+  movePlayer st side_speed SideDirection
 
 -- step Forward
 keyboardAct st (Char 'w') Down = do
-  (my_position, my_rotation, my_axises) <- Graphics.Rendering.OpenGL.get st
-  let (view_direction, side_direction, up_direction) = my_axises
-
-  let my_position' = my_position + view_direction `scalarMul` view_speed
-
-  st $=! (my_position', my_rotation, my_axises)
+  movePlayer st (view_speed) ViewDirection
 
 -- step Back
 keyboardAct st (Char 's') Down = do
-  (my_position, my_rotation, my_axises) <- Graphics.Rendering.OpenGL.get st
-  let (view_direction, side_direction, up_direction) = my_axises
-
-  let my_position' = my_position - view_direction `scalarMul` view_speed
-
-  st $=! (my_position', my_rotation, my_axises)
+  movePlayer st (-view_speed) ViewDirection
 
 -- rotate Up
 keyboardAct st (SpecialKey KeyUp) Down = do
-  (my_position, my_rotation, my_axises) <- Graphics.Rendering.OpenGL.get st
-  let (view_direction, side_direction, up_direction) = my_axises
-
-  let r0 = my_rotation `getCoord` 0 + 0.1
-  let my_rotation' = setCoord my_rotation 0 r0
-
-  setNewRotation st my_rotation'
+  rotatePlayer st 0 0.1
 
 -- rotate Down
 keyboardAct st (SpecialKey KeyDown) Down = do
-  (my_position, my_rotation, my_axises) <- Graphics.Rendering.OpenGL.get st
-  let (view_direction, side_direction, up_direction) = my_axises
-
-  let r0 = my_rotation `getCoord` 0 - 0.1
-  let my_rotation' = setCoord my_rotation 0 r0
-
-  setNewRotation st my_rotation'
+  rotatePlayer st 0 (-0.1)
 
 -- rotate Left
 keyboardAct st (SpecialKey KeyLeft) Down = do
-  (my_position, my_rotation, my_axises) <- Graphics.Rendering.OpenGL.get st
-  let (view_direction, side_direction, up_direction) = my_axises
-
-  let r0 = my_rotation `getCoord` 2 + 0.1
-  let my_rotation' = setCoord my_rotation 2 r0
-  print my_rotation'
-  setNewRotation st my_rotation'
+  rotatePlayer st 2 0.1
 
 -- rotate Right
 keyboardAct st (SpecialKey KeyRight) Down = do
-  (my_position, my_rotation, my_axises) <- Graphics.Rendering.OpenGL.get st
-  let (view_direction, side_direction, up_direction) = my_axises
-
-  let r0 = my_rotation `getCoord` 2 - 0.1
-  let my_rotation' = setCoord my_rotation 2 r0
-
-  setNewRotation st my_rotation'
+  rotatePlayer st 2 (-0.1)
 
 keyboardAct _ _ _ =
   return ()
@@ -163,10 +142,10 @@ setNewRotation st my_rotation' = do
 
 rotationMatrix i j phi = identity dimension & setElem (cos phi) (i, i) & setElem (-(sin phi)) (i, j) & setElem (cos phi) (j, j) & setElem (sin phi) (j, i)
 
-my_rotate :: Coords -> Int -> Int -> Double -> Coords
-my_rotate (Coords x) i j phi = Coords $ Data.Matrix.toList $ rotationMatrix i j phi * (fromList 3 1 x)
+my_rotate :: Int -> Int -> Double -> Coords -> Coords
+my_rotate i j phi (Coords x) = Coords $ Data.Matrix.toList $ rotationMatrix i j phi * (fromList 3 1 x)
 
-rotateByRotation pos (Coords rotation) = foldl (\pos' (i, r) -> my_rotate pos' i (i+1) r) pos $ zip [1..(dimension-1)] rotation
+rotateByRotation pos (Coords rotation) = foldl (\pos' (r, (i, j)) -> my_rotate i j r pos') pos $ zip rotation $ zip [1..dimension] ([2..dimension] ++ [1])
 
 -- $ \(i, j) -> | x == i && y == i = cos phi
 --                                                                  | x == i && y == j = (-(sin phi))
