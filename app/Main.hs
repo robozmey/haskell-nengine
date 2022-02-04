@@ -11,6 +11,7 @@ import Control.Lens
 import Control.Monad
 import Control.Parallel
 import Control.Parallel.Strategies
+import Control.Monad.Par
 
 import Graphics.UI.GLUT
 import Graphics.Rendering.OpenGL
@@ -38,7 +39,7 @@ pixelX = 1 / fromIntegral screenX
 pixelY = 1 / fromIntegral screenY
 
 display st = do
-    (my_position, axises) <- get st
+    (my_position, axises) <- Graphics.Rendering.OpenGL.get st
     clear [ColorBuffer]
     forM_ (raytrace my_position axises) (\(x, y, z, MyColor4 (r, g, b, a)) -> do
         currentColor $= Color4 r g b a
@@ -52,15 +53,14 @@ display st = do
       `using` rseq
     flush
 
-raytrace my_position axises = do
-    i <- [(-screenX)..screenX]
-    j <- [(-screenY)..screenY]
-    return $ ((((fromIntegral (i) / fromIntegral screenX) )), (fromIntegral (j) / fromIntegral screenY), 0, (trace my_position axises (i) (j)))
-  `using` parList rseq
+raytrace my_position axises = runPar $ do
+    let ij = [(i, j) | i <- [(-screenX)..screenX], j <- [(-screenY)..screenY]]
+    return $ map (\(i, j) -> ((((fromIntegral (i) / fromIntegral screenX) )), (fromIntegral (j) / fromIntegral screenY), 0, (trace my_position axises (i) (j)))) ij
+  --`using` parList rseq
             
 
 idle st = do
-  (my_position, tstamp) <- get st
+  (my_position, tstamp) <- Graphics.Rendering.OpenGL.get st
   postRedisplay Nothing
 
 side_speed = 0.1
@@ -71,36 +71,36 @@ keyboardMouse st key keyState _ {-modifiers-} _ {- pos -} =
 
 -- step Left
 keyboardAct st (Char 'a') Down = do
-  (my_position, axises) <- get st
+  (my_position, axises) <- Graphics.Rendering.OpenGL.get st
   let my_position' = my_position - side_direction `scalarMul` side_speed
   st $=! (my_position', axises)
 
 -- step Right
 keyboardAct st (Char 'd') Down = do
-  (my_position, axises) <- get st
+  (my_position, axises) <- Graphics.Rendering.OpenGL.get st
   let my_position' = my_position + side_direction `scalarMul` side_speed
   st $=! (my_position', axises)
 
 -- step Forward
 keyboardAct st (Char 'w') Down = do
-  (my_position, axises) <- get st
+  (my_position, axises) <- Graphics.Rendering.OpenGL.get st
   let my_position' = my_position + view_direction `scalarMul` view_speed
   st $=! (my_position', axises)
 
 -- step Back
 keyboardAct st (Char 's') Down = do
-  (my_position, axises) <- get st
+  (my_position, axises) <- Graphics.Rendering.OpenGL.get st
   let my_position' = my_position - view_direction `scalarMul` view_speed
   st $=! (my_position', axises)
 
 -- rotate Left
 keyboardAct st (SpecialKey KeyLeft) Down = do
-  (my_position, axises) <- get st
+  (my_position, axises) <- Graphics.Rendering.OpenGL.get st
   let my_position' = my_position + side_direction `scalarMul` side_speed
   st $=! (my_position', axises)
 
 keyboardAct st (SpecialKey keyRight) Down = do
-  (my_position, axises) <- get st
+  (my_position, axises) <- Graphics.Rendering.OpenGL.get st
   let my_position' = my_position - side_direction `scalarMul` side_speed
   st $=! (my_position', axises)
 

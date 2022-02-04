@@ -28,6 +28,7 @@ dependencies:
 - lens
 - matrix
 - parallel
+- monad-par
 library:
   source-dirs: src
 

@@ -86,5 +86,5 @@ trace :: Coords -> [Coords] -> Int -> Int -> MyColor4
 trace my_position (view_direction: (side_direction: (up_direction:oa))) x y = if (md > 0.1) then blackColor else c
     where dxs = normilize $ cxs - my_position
           cxs = my_position + view_direction `scalarMul` screen_distance + side_direction `scalarMul` (fromIntegral  x * pixel_x_size) + up_direction `scalarMul` (fromIntegral y * pixel_y_size)
-          fxs = foldl (\cxs' i ->  trace' cxs' dxs) cxs [0..3]
+          fxs = foldl (\cxs' i ->  trace' cxs' dxs) cxs [0..10]
           (md, c) = min_distance fxs
