@@ -25,6 +25,7 @@ source-repository head
 
 library
   exposed-modules:
+      Figures
       Lib
   other-modules:
       Paths_robozmey_haskell_app

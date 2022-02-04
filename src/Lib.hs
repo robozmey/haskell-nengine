@@ -22,6 +22,11 @@ instance Num Coords where
     signum (Coords x) = Coords $ map signum x
     fromInteger c = Coords $ take dimension $ repeat $ fromInteger c
 
+getCoord :: Coords -> Int -> Double
+getCoord (Coords xs) index = xs !! index 
+
+setCoord :: Coords -> Int -> Double -> Coords
+setCoord (Coords xs) index val = Coords $ take index xs ++ val : drop (index + 1) xs
 
 scalarMul :: Coords -> Double -> Coords
 scalarMul (Coords xs) a = Coords $ map (*a) xs
@@ -82,8 +87,8 @@ trace' :: Coords -> Coords -> Coords
 trace' cxs dxs = moveCoordsD cxs dxs d
     where (d, c) = min_distance cxs
 
-trace :: Coords -> [Coords] -> Int -> Int -> MyColor4
-trace my_position (view_direction: (side_direction: (up_direction:oa))) x y = if (md > 0.1) then blackColor else c
+traceRay :: Coords -> (Coords, Coords, Coords) -> Int -> Int -> MyColor4
+traceRay my_position (view_direction, side_direction, up_direction) x y = if (md > 0.1) then blackColor else c
     where dxs = normilize $ cxs - my_position
           cxs = my_position + view_direction `scalarMul` screen_distance + side_direction `scalarMul` (fromIntegral  x * pixel_x_size) + up_direction `scalarMul` (fromIntegral y * pixel_y_size)
           fxs = foldl (\cxs' i ->  trace' cxs' dxs) cxs [0..10]
